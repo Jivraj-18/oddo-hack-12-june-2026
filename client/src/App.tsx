@@ -7,6 +7,9 @@ import { LoginPage } from "./features/auth/LoginPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { EnvironmentalPage } from "./features/environmental/EnvironmentalPage";
 import { SocialPage } from "./features/social/SocialPage";
+import { GamificationPage } from "./features/gamification/GamificationPage";
+import { GovernancePage } from "./features/governance/GovernancePage";
+import { SettingsPage } from "./features/settings/SettingsPage";
 
 function App() {
   return (
@@ -18,22 +21,13 @@ function App() {
             <Route index element={<DashboardPage />} />
             <Route path="/environmental" element={<EnvironmentalPage />} />
             <Route path="/social" element={<SocialPage />} />
-            <Route
-              path="/governance"
-              element={<ModulePage title="Governance" tabs={["Policies", "Policy Acknowledgements", "Audits", "Compliance Issues"]} />}
-            />
-            <Route
-              path="/gamification"
-              element={<ModulePage title="Gamification" tabs={["Challenges", "Challenge Participation", "Badges", "Rewards", "Leaderboard"]} />}
-            />
+            <Route path="/governance" element={<GovernancePage />} />
+            <Route path="/gamification" element={<GamificationPage />} />
             <Route
               path="/reports"
               element={<ModulePage title="Reports" tabs={["Environmental", "Social", "Governance", "ESG Summary", "Custom Builder"]} />}
             />
-            <Route
-              path="/settings"
-              element={<ModulePage title="Settings" tabs={["Departments", "Categories", "ESG Configuration", "Notification Settings"]} />}
-            />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
       </Routes>
