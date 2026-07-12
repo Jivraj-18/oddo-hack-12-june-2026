@@ -36,6 +36,11 @@ socialRouter.post(
   }
 );
 
+socialRouter.get("/participations", requireRole("admin", "manager"), async (req, res) => {
+  const status = typeof req.query.status === "string" ? (req.query.status as "pending" | "approved" | "rejected") : undefined;
+  res.json(await socialService.listParticipations(status));
+});
+
 socialRouter.patch("/participations/:id/approve", requireRole("admin", "manager"), async (req, res) => {
   const participation = await socialService.reviewParticipation(req.params.id, "approved", req.user!.id);
   res.json(participation);

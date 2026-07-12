@@ -17,53 +17,185 @@ interface CsrActivity {
   _count: { participations: number };
 }
 
-const TABS = ["CSR Activities"] as const;
+interface Participation {
+  id: string;
+  approvalStatus: "pending" | "approved" | "rejected";
+  proofFilePath: string | null;
+  pointsEarned: number;
+  createdAt: string;
+  user: { name: string };
+  csrActivity: { title: string; points: number };
+}
+
+interface DiversityMetric {
+  id: string;
+  period: string;
+  genderRatio: { male: number; female: number; other: number };
+  trainingCompletionPct: string;
+  department: { name: string };
+}
+
+const TABS = ["CSR Activities", "Employee Participation", "Diversity Dashboard"] as const;
+type Tab = (typeof TABS)[number];
 
 export function SocialPage() {
   const { user } = useAuth();
+  const [tab, setTab] = useState<Tab>("CSR Activities");
   const [activities, setActivities] = useState<CsrActivity[]>([]);
+  const [participations, setParticipations] = useState<Participation[]>([]);
+  const [diversityMetrics, setDiversityMetrics] = useState<DiversityMetric[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const isManager = user?.role === "admin" || user?.role === "manager";
 
-  function load() {
+  function loadActivities() {
     apiClient
       .get<CsrActivity[]>("/csr-activities")
       .then((res) => setActivities(res.data))
       .catch(() => setError("Could not load CSR activities."));
   }
 
-  useEffect(load, []);
+  function loadParticipations() {
+    if (!isManager) return;
+    apiClient
+      .get<Participation[]>("/participations", { params: { status: "pending" } })
+      .then((res) => setParticipations(res.data))
+      .catch(() => setError("Could not load participations."));
+  }
+
+  function loadDiversity() {
+    apiClient
+      .get<DiversityMetric[]>("/diversity-metrics")
+      .then((res) => setDiversityMetrics(res.data))
+      .catch(() => setError("Could not load diversity metrics."));
+  }
+
+  useEffect(loadActivities, []);
+  useEffect(loadParticipations, [isManager]);
+  useEffect(loadDiversity, []);
 
   function handleJoined(activityId: string) {
     setJoinedIds((prev) => new Set(prev).add(activityId));
-    load();
+    loadActivities();
+  }
+
+  async function handleReview(participationId: string, decision: "approve" | "reject") {
+    try {
+      await apiClient.patch(`/participations/${participationId}/${decision}`);
+      loadParticipations();
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    }
   }
 
   return (
     <div className="social-page" id="social-page">
       <h1>Social</h1>
       <div className="social-page__tabs" role="tablist">
-        {TABS.map((t) => (
-          <span key={t} className="social-page__tab is-active">
+        {TABS.filter((t) => t !== "Employee Participation" || isManager).map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            className={"social-page__tab" + (tab === t ? " is-active" : "")}
+            onClick={() => setTab(t)}
+          >
             {t}
-          </span>
+          </button>
         ))}
       </div>
 
       {error && <p className="social-page__error">{error}</p>}
 
-      <div className="social-page__grid">
-        {activities.length === 0 && !error && <p className="social-page__empty">No CSR activities yet — create one.</p>}
-        {activities.map((activity) => (
-          <CsrActivityCard
-            key={activity.id}
-            activity={activity}
-            canJoin={user?.role === "employee"}
-            joined={joinedIds.has(activity.id)}
-            onJoined={() => handleJoined(activity.id)}
-          />
-        ))}
-      </div>
+      {tab === "CSR Activities" && (
+        <div className="social-page__grid">
+          {activities.length === 0 && !error && <p className="social-page__empty">No CSR activities yet — create one.</p>}
+          {activities.map((activity) => (
+            <CsrActivityCard
+              key={activity.id}
+              activity={activity}
+              canJoin={user?.role === "employee"}
+              joined={joinedIds.has(activity.id)}
+              onJoined={() => handleJoined(activity.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {tab === "Employee Participation" && isManager && (
+        <table className="social-page__table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Activity</th>
+              <th>Proof</th>
+              <th>Points</th>
+              <th>Submitted</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {participations.length === 0 && (
+              <tr>
+                <td colSpan={6} className="social-page__empty-row">
+                  No pending participations to review.
+                </td>
+              </tr>
+            )}
+            {participations.map((p) => (
+              <tr key={p.id}>
+                <td>{p.user.name}</td>
+                <td>{p.csrActivity.title}</td>
+                <td>
+                  {p.proofFilePath ? (
+                    <a href={`http://localhost:4000${p.proofFilePath}`} target="_blank" rel="noreferrer">
+                      View proof
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td>{p.csrActivity.points}</td>
+                <td>{new Date(p.createdAt).toLocaleDateString()}</td>
+                <td className="social-page__actions">
+                  <button type="button" className="social-page__approve-btn" onClick={() => handleReview(p.id, "approve")}>
+                    Approve
+                  </button>
+                  <button type="button" className="social-page__reject-btn" onClick={() => handleReview(p.id, "reject")}>
+                    Reject
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {tab === "Diversity Dashboard" && (
+        <table className="social-page__table">
+          <thead>
+            <tr>
+              <th>Department</th>
+              <th>Period</th>
+              <th>Gender ratio (M/F/O)</th>
+              <th>Training completion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {diversityMetrics.map((m) => (
+              <tr key={m.id}>
+                <td>{m.department.name}</td>
+                <td>{m.period}</td>
+                <td>
+                  {m.genderRatio.male}% / {m.genderRatio.female}% / {m.genderRatio.other}%
+                </td>
+                <td>{Number(m.trainingCompletionPct).toFixed(1)}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

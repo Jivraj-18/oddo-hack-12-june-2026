@@ -152,3 +152,58 @@
   font-weight: 600;
   color: var(--color-primary);
 }
+
+.social-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.social-page__table th {
+  text-align: left;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.social-page__table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.social-page__empty-row {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-5);
+}
+
+.social-page__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.social-page__approve-btn,
+.social-page__reject-btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.social-page__approve-btn {
+  background: var(--color-success);
+  color: #fff;
+}
+
+.social-page__reject-btn {
+  background: none;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+}

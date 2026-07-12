@@ -36,6 +36,11 @@ gamificationRouter.post("/challenges/:id/join", validateBody(joinChallengeSchema
   res.status(201).json(participation);
 });
 
+gamificationRouter.get("/challenge-participations", requireRole("admin", "manager"), async (req, res) => {
+  const status = typeof req.query.status === "string" ? (req.query.status as "pending" | "approved" | "rejected") : undefined;
+  res.json(await gamificationService.listChallengeParticipations(status));
+});
+
 gamificationRouter.patch("/challenge-participations/:id/approve", requireRole("admin", "manager"), async (req, res) => {
   const participation = await gamificationService.completeChallengeParticipation(req.params.id, "approved");
   res.json(participation);

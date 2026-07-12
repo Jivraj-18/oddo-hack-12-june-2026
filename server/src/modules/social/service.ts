@@ -17,6 +17,14 @@ export async function listCsrActivities() {
   });
 }
 
+export async function listParticipations(status?: "pending" | "approved" | "rejected") {
+  return prisma.employeeParticipation.findMany({
+    where: status ? { approvalStatus: status } : undefined,
+    include: { user: true, csrActivity: true, reviewer: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function joinCsrActivity(userId: string, csrActivityId: string, proofFilePath?: string) {
   const activity = await prisma.csrActivity.findUnique({ where: { id: csrActivityId } });
   if (!activity) {

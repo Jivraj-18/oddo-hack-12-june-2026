@@ -221,3 +221,127 @@
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border);
 }
+
+.gamification-page__empty-row {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-5);
+}
+
+.gamification-page__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.gamification-page__approve-btn,
+.gamification-page__reject-btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gamification-page__approve-btn {
+  background: var(--color-success);
+  color: #fff;
+}
+
+.gamification-page__reject-btn {
+  background: none;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+}
+
+.gamification-page__create {
+  margin-bottom: var(--space-5);
+}
+
+.gamification-page__add-btn {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.gamification-page__form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  align-items: end;
+}
+
+.gamification-page__form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gamification-page__form input,
+.gamification-page__form select {
+  font-size: 14px;
+  font-weight: 400;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.gamification-page__checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: var(--space-2) !important;
+}
+
+.gamification-page__field-error {
+  color: var(--color-danger);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.gamification-page__form-error {
+  grid-column: 1 / -1;
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.gamification-page__submit {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  font-weight: 600;
+  height: fit-content;
+}
+
+.challenge-card__transitions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.challenge-card__transition-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.challenge-card__transition-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}

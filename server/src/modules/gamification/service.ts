@@ -24,6 +24,14 @@ export async function listChallenges() {
   return prisma.challenge.findMany({ include: { category: true, _count: { select: { participations: true } } }, orderBy: { deadline: "asc" } });
 }
 
+export async function listChallengeParticipations(status?: "pending" | "approved" | "rejected") {
+  return prisma.challengeParticipation.findMany({
+    where: status ? { approvalStatus: status } : undefined,
+    include: { user: true, challenge: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function updateChallengeStatus(challengeId: string, nextStatus: ChallengeStatus) {
   const challenge = await prisma.challenge.findUnique({ where: { id: challengeId } });
   if (!challenge) {
