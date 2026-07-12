@@ -17,7 +17,7 @@
 .environmental-page__tab.is-active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 .environmental-page__error {
@@ -30,7 +30,7 @@
 
 .environmental-page__add-btn {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
@@ -81,7 +81,7 @@
 
 .environmental-page__submit {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);

@@ -42,7 +42,7 @@
 
 .app-layout__nav-link.is-active {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 .app-layout__tour-btn {

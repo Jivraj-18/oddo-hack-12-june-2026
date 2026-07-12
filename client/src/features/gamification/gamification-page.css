@@ -17,7 +17,7 @@
 .gamification-page__tab.is-active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 .gamification-page__message {
@@ -137,7 +137,7 @@
 .reward-card__redeem-btn {
   margin-top: var(--space-2);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2);
@@ -260,7 +260,7 @@
 
 .gamification-page__add-btn {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
@@ -317,7 +317,7 @@
 
 .gamification-page__submit {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);

@@ -15,7 +15,7 @@
 .social-page__tab.is-active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 .social-page__error {
@@ -115,7 +115,7 @@
 .csr-card__join-btn {
   margin-top: var(--space-2);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2);
@@ -214,7 +214,7 @@
 
 .social-page__add-btn {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
@@ -271,7 +271,7 @@
 
 .social-page__submit {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);

@@ -29,7 +29,7 @@
 
 .reports-page__run-btn {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
