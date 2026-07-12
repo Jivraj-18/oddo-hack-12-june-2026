@@ -1,0 +1,126 @@
+.tour-beacon {
+  position: relative;
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+
+.tour-beacon__dot {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.tour-beacon__pulse {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.5;
+  animation: tour-beacon-pulse 1.6s ease-out infinite;
+}
+
+@keyframes tour-beacon-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.tour-tooltip {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  max-width: 320px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.tour-tooltip__title {
+  margin: 0 0 var(--space-2);
+  font-size: 16px;
+}
+
+.tour-tooltip__content {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.tour-tooltip__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+}
+
+.tour-tooltip__dots {
+  display: flex;
+  gap: 4px;
+}
+
+.tour-tooltip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.tour-tooltip__dot.is-active {
+  background: var(--color-primary);
+}
+
+.tour-tooltip__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tour-tooltip__skip,
+.tour-tooltip__back {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+}
+
+.tour-tooltip__primary {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-4);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tour-tooltip__close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tour-arrow {
+  fill: var(--color-surface);
+}

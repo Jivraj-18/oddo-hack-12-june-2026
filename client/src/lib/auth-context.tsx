@@ -9,6 +9,7 @@ export interface AuthUser {
   email: string;
   role: Role;
   departmentId: string | null;
+  tourCompletedAt: string | null;
 }
 
 interface AuthContextValue {
@@ -16,6 +17,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  markTourComplete: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -56,7 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
-  const value = useMemo(() => ({ user, login, register, logout }), [user]);
+  async function markTourComplete() {
+    const { data } = await apiClient.patch<{ id: string; tourCompletedAt: string }>("/auth/me/tour-complete");
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, tourCompletedAt: data.tourCompletedAt };
+      localStorage.setItem(USER_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  const value = useMemo(() => ({ user, login, register, logout, markTourComplete }), [user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
