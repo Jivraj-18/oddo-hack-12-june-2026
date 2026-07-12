@@ -158,3 +158,20 @@
   background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
   color: var(--color-text-muted);
 }
+
+.environmental-page__source {
+  font-size: 11px;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.environmental-page__source--auto {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+}
+
+.environmental-page__source--manual {
+  background: color-mix(in srgb, var(--color-secondary) 15%, transparent);
+  color: var(--color-secondary);
+}

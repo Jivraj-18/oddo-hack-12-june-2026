@@ -2,6 +2,7 @@ import { Router } from "express";
 import { requireAuth, requireRole } from "../../middleware/auth.js";
 import { validateBody, validateQuery } from "../../middleware/validate.js";
 import {
+  createEmissionFactorSchema,
   createErpOperationSchema,
   createEnvironmentalGoalSchema,
   carbonTransactionQuerySchema,
@@ -16,6 +17,20 @@ environmentalRouter.use(requireAuth);
 environmentalRouter.get("/emission-factors", async (_req, res) => {
   res.json(await prisma.emissionFactor.findMany({ orderBy: { name: "asc" } }));
 });
+
+environmentalRouter.get("/product-esg-profiles", async (_req, res) => {
+  res.json(await prisma.productEsgProfile.findMany({ include: { emissionFactor: true }, orderBy: { productName: "asc" } }));
+});
+
+environmentalRouter.post(
+  "/emission-factors",
+  requireRole("admin"),
+  validateBody(createEmissionFactorSchema),
+  async (req, res) => {
+    const factor = await prisma.emissionFactor.create({ data: { ...req.body, status: "active" } });
+    res.status(201).json(factor);
+  }
+);
 
 environmentalRouter.post(
   "/erp-operations",
