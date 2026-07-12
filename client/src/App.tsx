@@ -5,6 +5,8 @@ import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { ModulePage } from "./components/layout/ModulePage";
 import { LoginPage } from "./features/auth/LoginPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
+import { EnvironmentalPage } from "./features/environmental/EnvironmentalPage";
+import { SocialPage } from "./features/social/SocialPage";
 
 function App() {
   return (
@@ -14,19 +16,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route index element={<DashboardPage />} />
-            <Route
-              path="/environmental"
-              element={
-                <ModulePage
-                  title="Environmental"
-                  tabs={["Emission Factors", "Product ESG Profiles", "Carbon Transactions", "Environmental Goals"]}
-                />
-              }
-            />
-            <Route
-              path="/social"
-              element={<ModulePage title="Social" tabs={["CSR Activities", "Employee Participation", "Diversity Dashboard"]} />}
-            />
+            <Route path="/environmental" element={<EnvironmentalPage />} />
+            <Route path="/social" element={<SocialPage />} />
             <Route
               path="/governance"
               element={<ModulePage title="Governance" tabs={["Policies", "Policy Acknowledgements", "Audits", "Compliance Issues"]} />}
