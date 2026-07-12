@@ -47,12 +47,23 @@ export async function buildSocialReport(filters: Filters): Promise<ReportResult>
     where: filters.department ? { id: filters.department } : undefined,
   });
 
+  const createdAt = dateRangeWhere(filters.from, filters.to);
+
   const rows: ReportRow[] = [];
   for (const dept of departments) {
-    const users = await prisma.user.findMany({ where: { departmentId: dept.id }, select: { id: true } });
+    const users = await prisma.user.findMany({
+      where: { departmentId: dept.id, ...(filters.employee ? { id: filters.employee } : {}) },
+      select: { id: true },
+    });
     const userIds = users.map((u) => u.id);
     const participations = userIds.length
-      ? await prisma.employeeParticipation.findMany({ where: { userId: { in: userIds } } })
+      ? await prisma.employeeParticipation.findMany({
+          where: {
+            userId: { in: userIds },
+            ...(createdAt ? { createdAt } : {}),
+            ...(filters.category ? { csrActivity: { categoryId: filters.category } } : {}),
+          },
+        })
       : [];
     const approved = participations.filter((p) => p.approvalStatus === "approved").length;
     rows.push({
@@ -71,9 +82,17 @@ export async function buildGovernanceReport(filters: Filters): Promise<ReportRes
     where: filters.department ? { id: filters.department } : undefined,
   });
 
+  const createdAt = dateRangeWhere(filters.from, filters.to);
+
   const rows: ReportRow[] = [];
   for (const dept of departments) {
-    const issues = await prisma.complianceIssue.findMany({ where: { departmentId: dept.id } });
+    const issues = await prisma.complianceIssue.findMany({
+      where: {
+        departmentId: dept.id,
+        ...(createdAt ? { createdAt } : {}),
+        ...(filters.employee ? { ownerUserId: filters.employee } : {}),
+      },
+    });
     const open = issues.filter((i) => i.status !== "resolved").length;
     const overdue = issues.filter((i) => i.isOverdue).length;
     rows.push({
@@ -88,10 +107,17 @@ export async function buildGovernanceReport(filters: Filters): Promise<ReportRes
 }
 
 export async function buildEsgSummaryReport(filters: Filters): Promise<ReportResult> {
-  const latestPeriod = await prisma.departmentScore.findFirst({ orderBy: { period: "desc" }, select: { period: true } });
-  const scores = latestPeriod
+  const periodRecord = filters.to
+    ? await prisma.departmentScore.findFirst({
+        where: { period: { lte: filters.to.toISOString().slice(0, 7) } },
+        orderBy: { period: "desc" },
+        select: { period: true },
+      })
+    : await prisma.departmentScore.findFirst({ orderBy: { period: "desc" }, select: { period: true } });
+
+  const scores = periodRecord
     ? await prisma.departmentScore.findMany({
-        where: { period: latestPeriod.period, ...(filters.department ? { departmentId: filters.department } : {}) },
+        where: { period: periodRecord.period, ...(filters.department ? { departmentId: filters.department } : {}) },
         include: { department: true },
         orderBy: { totalScore: "desc" },
       })

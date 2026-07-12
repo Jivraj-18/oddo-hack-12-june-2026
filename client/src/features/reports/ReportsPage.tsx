@@ -16,6 +16,21 @@ interface Department {
   name: string;
 }
 
+interface UserOption {
+  id: string;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Challenge {
+  id: string;
+  title: string;
+}
+
 const REPORT_TYPES: Array<{ value: ReportType; label: string }> = [
   { value: "environmental", label: "Environmental" },
   { value: "social", label: "Social" },
@@ -26,7 +41,15 @@ const REPORT_TYPES: Array<{ value: ReportType; label: string }> = [
 export function ReportsPage() {
   const [reportType, setReportType] = useState<ReportType>("esg-summary");
   const [departmentId, setDepartmentId] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
+  const [challengeId, setChallengeId] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [users, setUsers] = useState<UserOption[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [result, setResult] = useState<ReportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,15 +57,27 @@ export function ReportsPage() {
 
   useEffect(() => {
     apiClient.get<Department[]>("/departments").then((res) => setDepartments(res.data)).catch(() => {});
+    apiClient.get<UserOption[]>("/users").then((res) => setUsers(res.data)).catch(() => {});
+    apiClient.get<Category[]>("/categories").then((res) => setCategories(res.data)).catch(() => {});
+    apiClient.get<Challenge[]>("/challenges").then((res) => setChallenges(res.data)).catch(() => {});
   }, []);
+
+  function buildFilters() {
+    return {
+      ...(departmentId ? { department: departmentId } : {}),
+      ...(employeeId ? { employee: employeeId } : {}),
+      ...(challengeId ? { challenge: challengeId } : {}),
+      ...(categoryId ? { category: categoryId } : {}),
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+    };
+  }
 
   async function handleRun() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await apiClient.get<ReportResult>(`/reports/${reportType}`, {
-        params: departmentId ? { department: departmentId } : {},
-      });
+      const { data } = await apiClient.get<ReportResult>(`/reports/${reportType}`, { params: buildFilters() });
       setResult(data);
     } catch (err) {
       setError(getApiErrorMessage(err));
@@ -57,7 +92,7 @@ export function ReportsPage() {
     try {
       const response = await apiClient.post(
         "/reports/custom",
-        { reportType, format, ...(departmentId ? { department: departmentId } : {}) },
+        { reportType, format, ...buildFilters() },
         { responseType: "blob" }
       );
       const extension = format === "excel" ? "xlsx" : format;
@@ -82,7 +117,7 @@ export function ReportsPage() {
 
       <section className="reports-page__builder">
         <label htmlFor="report-type">
-          Report type
+          Module
           <select id="report-type" value={reportType} onChange={(e) => setReportType(e.target.value as ReportType)}>
             {REPORT_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -101,6 +136,47 @@ export function ReportsPage() {
               </option>
             ))}
           </select>
+        </label>
+        <label htmlFor="report-employee">
+          Employee
+          <select id="report-employee" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
+            <option value="">All employees</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label htmlFor="report-category">
+          ESG Category
+          <select id="report-category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            <option value="">All categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label htmlFor="report-challenge">
+          Challenge
+          <select id="report-challenge" value={challengeId} onChange={(e) => setChallengeId(e.target.value)}>
+            <option value="">All challenges</option>
+            {challenges.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label htmlFor="report-from">
+          From
+          <input id="report-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+        </label>
+        <label htmlFor="report-to">
+          To
+          <input id="report-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </label>
         <button type="button" className="reports-page__run-btn" onClick={handleRun} disabled={loading}>
           {loading ? "Running…" : "Run report"}
