@@ -5,6 +5,7 @@ import { createApp } from "./app.js";
 import { setIo } from "./realtime.js";
 import { startOverdueComplianceJob } from "./jobs/overdue-compliance.js";
 import { startScoringJob } from "./jobs/scoring.js";
+import { startPolicyReminderJob } from "./jobs/policy-reminders.js";
 
 const app = createApp();
 const httpServer = createServer(app);
@@ -20,6 +21,7 @@ io.on("connection", (socket) => {
 
 startOverdueComplianceJob();
 startScoringJob();
+startPolicyReminderJob();
 
 const port = Number(process.env.PORT ?? 4000);
 httpServer.listen(port, () => {
