@@ -8,6 +8,7 @@ import {
   updateComplianceIssueSchema,
 } from "./schema.js";
 import * as governanceService from "./service.js";
+import { sendPolicyReminders } from "../../jobs/policy-reminders.js";
 
 export const governanceRouter = Router();
 
@@ -25,6 +26,11 @@ governanceRouter.post("/policies", requireRole("admin"), validateBody(createPoli
 governanceRouter.post("/policies/:id/acknowledge", async (req, res) => {
   const ack = await governanceService.acknowledgePolicy(req.params.id, req.user!.id);
   res.status(201).json(ack);
+});
+
+governanceRouter.post("/policies/send-reminders", requireRole("admin"), async (_req, res) => {
+  const sent = await sendPolicyReminders();
+  res.json({ remindersSent: sent });
 });
 
 governanceRouter.get("/audits", async (_req, res) => {
