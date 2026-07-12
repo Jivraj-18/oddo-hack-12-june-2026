@@ -1,0 +1,198 @@
+.gamification-page__tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.gamification-page__tab {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-4);
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+}
+
+.gamification-page__tab.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.gamification-page__message {
+  color: var(--color-primary);
+}
+
+.gamification-page__empty {
+  color: var(--color-text-muted);
+}
+
+.gamification-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.challenge-card,
+.reward-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.challenge-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.challenge-card__header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.challenge-card__difficulty {
+  font-size: 11px;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.challenge-card__difficulty--easy {
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+
+.challenge-card__difficulty--medium {
+  background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+  color: var(--color-warning);
+}
+
+.challenge-card__difficulty--hard {
+  background: color-mix(in srgb, var(--color-danger) 15%, transparent);
+  color: var(--color-danger);
+}
+
+.challenge-card__category {
+  font-size: 12px;
+  color: var(--color-secondary);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.challenge-card__description {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.challenge-card__meta {
+  display: flex;
+  gap: var(--space-3);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.challenge-card__status {
+  align-self: start;
+  font-size: 11px;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  text-transform: capitalize;
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+}
+
+.challenge-card__join-btn,
+.reward-card__redeem-btn {
+  margin-top: var(--space-2);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reward-card__redeem-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reward-card__description {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.reward-card__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gamification-page__badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
+.badge-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-1);
+}
+
+.badge-tile.is-locked {
+  opacity: 0.4;
+}
+
+.badge-tile__icon {
+  font-size: 28px;
+}
+
+.badge-tile__name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.badge-tile__description {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.gamification-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.gamification-page__table th {
+  text-align: left;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gamification-page__table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
