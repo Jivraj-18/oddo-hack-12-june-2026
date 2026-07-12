@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./lib/auth-context";
 import { AppLayout } from "./components/layout/AppLayout";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
-import { ModulePage } from "./components/layout/ModulePage";
 import { LoginPage } from "./features/auth/LoginPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { EnvironmentalPage } from "./features/environmental/EnvironmentalPage";
@@ -10,6 +9,7 @@ import { SocialPage } from "./features/social/SocialPage";
 import { GamificationPage } from "./features/gamification/GamificationPage";
 import { GovernancePage } from "./features/governance/GovernancePage";
 import { SettingsPage } from "./features/settings/SettingsPage";
+import { ReportsPage } from "./features/reports/ReportsPage";
 
 function App() {
   return (
@@ -23,10 +23,7 @@ function App() {
             <Route path="/social" element={<SocialPage />} />
             <Route path="/governance" element={<GovernancePage />} />
             <Route path="/gamification" element={<GamificationPage />} />
-            <Route
-              path="/reports"
-              element={<ModulePage title="Reports" tabs={["Environmental", "Social", "Governance", "ESG Summary", "Custom Builder"]} />}
-            />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>

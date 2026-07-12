@@ -7,6 +7,7 @@ import { environmentalRouter } from "./modules/environmental/routes.js";
 import { socialRouter } from "./modules/social/routes.js";
 import { gamificationRouter } from "./modules/gamification/routes.js";
 import { governanceRouter } from "./modules/governance/routes.js";
+import { reportsRouter } from "./modules/reports/routes.js";
 import { dashboardRouter } from "./modules/dashboard/routes.js";
 import { notificationsRouter } from "./modules/notifications/routes.js";
 import { settingsRouter } from "./modules/settings/routes.js";
@@ -27,6 +28,7 @@ export function createApp() {
   app.use("/api/v1", socialRouter);
   app.use("/api/v1", gamificationRouter);
   app.use("/api/v1", governanceRouter);
+  app.use("/api/v1", reportsRouter);
   app.use("/api/v1/notifications", notificationsRouter);
   app.use("/api/v1/settings", settingsRouter);
 
