@@ -5,6 +5,7 @@ import path from "node:path";
 import { authRouter } from "./modules/auth/routes.js";
 import { uploadsRouter } from "./modules/uploads/routes.js";
 import { departmentsRouter } from "./modules/departments/routes.js";
+import { usersRouter } from "./modules/users/routes.js";
 import { environmentalRouter } from "./modules/environmental/routes.js";
 import { socialRouter } from "./modules/social/routes.js";
 import { gamificationRouter } from "./modules/gamification/routes.js";
@@ -27,6 +28,7 @@ export function createApp() {
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1", uploadsRouter);
   app.use("/api/v1/departments", departmentsRouter);
+  app.use("/api/v1/users", usersRouter);
   app.use("/api/v1/dashboard", dashboardRouter);
   app.use("/api/v1", environmentalRouter);
   app.use("/api/v1", socialRouter);
