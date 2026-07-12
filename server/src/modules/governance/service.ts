@@ -1,5 +1,6 @@
 import { prisma } from "../../db/prisma.js";
 import { AppError } from "../../middleware/error-handler.js";
+import { emitToUser } from "../../realtime.js";
 import type { z } from "zod";
 import type { createPolicySchema, createAuditSchema, createComplianceIssueSchema } from "./schema.js";
 
@@ -36,7 +37,21 @@ export async function createComplianceIssue(auditId: string, input: z.infer<type
   if (!audit) {
     throw new AppError(404, "not_found", "Audit not found.");
   }
-  return prisma.complianceIssue.create({ data: { ...input, auditId, status: "open" } });
+  const issue = await prisma.complianceIssue.create({ data: { ...input, auditId, status: "open" } });
+
+  const admins = await prisma.user.findMany({ where: { role: "admin" } });
+  for (const userId of new Set([issue.ownerUserId, ...admins.map((a) => a.id)])) {
+    const body =
+      userId === issue.ownerUserId
+        ? `"${issue.description}" was opened and assigned to you.`
+        : `"${issue.description}" was opened for ${audit.title}.`;
+    const notification = await prisma.notification.create({
+      data: { userId, type: "compliance_issue", title: "New compliance issue", body },
+    });
+    emitToUser(userId, "notification", notification);
+  }
+
+  return issue;
 }
 
 export async function listComplianceIssues() {

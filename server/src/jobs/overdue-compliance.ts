@@ -1,8 +1,8 @@
 import cron from "node-cron";
-import type { Server } from "socket.io";
 import { prisma } from "../db/prisma.js";
+import { emitToUser } from "../realtime.js";
 
-export async function flagOverdueComplianceIssues(io?: Server) {
+export async function flagOverdueComplianceIssues() {
   const overdue = await prisma.complianceIssue.findMany({
     where: { status: "open", isOverdue: false, dueDate: { lt: new Date() } },
   });
@@ -22,15 +22,15 @@ export async function flagOverdueComplianceIssues(io?: Server) {
           body: `"${issue.description}" is past its due date.`,
         },
       });
-      io?.to(`user:${userId}`).emit("notification", notification);
+      emitToUser(userId, "notification", notification);
     }
   }
 
   return overdue.length;
 }
 
-export function startOverdueComplianceJob(io: Server) {
+export function startOverdueComplianceJob() {
   cron.schedule("0 * * * *", () => {
-    flagOverdueComplianceIssues(io).catch((err) => console.error("overdue-compliance job failed", err));
+    flagOverdueComplianceIssues().catch((err) => console.error("overdue-compliance job failed", err));
   });
 }

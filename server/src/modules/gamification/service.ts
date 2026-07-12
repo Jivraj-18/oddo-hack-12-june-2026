@@ -1,6 +1,8 @@
 import { prisma } from "../../db/prisma.js";
 import { AppError } from "../../middleware/error-handler.js";
 import { evaluateBadgesForUser } from "./badge-engine.js";
+import { emitToUser } from "../../realtime.js";
+import type { Notification } from "@prisma/client";
 import type { z } from "zod";
 import type { createChallengeSchema } from "./schema.js";
 
@@ -73,18 +75,19 @@ export async function completeChallengeParticipation(participationId: string, de
 
   const xpAwarded = decision === "approved" ? participation.challenge.xp : 0;
 
-  return prisma.$transaction(async (tx) => {
+  const updated = await prisma.$transaction(async (tx) => {
     const record = await tx.challengeParticipation.update({
       where: { id: participationId },
       data: { approvalStatus: decision, xpAwarded, progressPct: decision === "approved" ? 100 : participation.progressPct },
     });
 
+    let badgeNotifications: Notification[] = [];
     if (decision === "approved") {
       await tx.user.update({ where: { id: participation.userId }, data: { xpBalance: { increment: xpAwarded } } });
-      await evaluateBadgesForUser(participation.userId, tx);
+      badgeNotifications = await evaluateBadgesForUser(participation.userId, tx);
     }
 
-    await tx.notification.create({
+    const notification = await tx.notification.create({
       data: {
         userId: participation.userId,
         type: "approval_decision",
@@ -93,8 +96,14 @@ export async function completeChallengeParticipation(participationId: string, de
       },
     });
 
-    return record;
+    return { record, notification, badgeNotifications };
   });
+
+  emitToUser(participation.userId, "notification", updated.notification);
+  for (const badgeNotification of updated.badgeNotifications) {
+    emitToUser(participation.userId, "notification", badgeNotification);
+  }
+  return updated.record;
 }
 
 export async function listBadges(userId: string) {
