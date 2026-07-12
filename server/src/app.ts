@@ -1,7 +1,9 @@
 import "express-async-errors";
 import express from "express";
 import cors from "cors";
+import path from "node:path";
 import { authRouter } from "./modules/auth/routes.js";
+import { uploadsRouter } from "./modules/uploads/routes.js";
 import { departmentsRouter } from "./modules/departments/routes.js";
 import { environmentalRouter } from "./modules/environmental/routes.js";
 import { socialRouter } from "./modules/social/routes.js";
@@ -18,10 +20,12 @@ export function createApp() {
 
   app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? "http://localhost:5173" }));
   app.use(express.json());
+  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
   app.get("/api/v1/health", (_req, res) => res.json({ status: "ok" }));
 
   app.use("/api/v1/auth", authRouter);
+  app.use("/api/v1", uploadsRouter);
   app.use("/api/v1/departments", departmentsRouter);
   app.use("/api/v1/dashboard", dashboardRouter);
   app.use("/api/v1", environmentalRouter);

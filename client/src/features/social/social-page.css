@@ -127,3 +127,28 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.csr-card__file-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.csr-card__file-label input {
+  font-size: 12px;
+}
+
+.csr-card__message {
+  font-size: 13px;
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.csr-card__joined-flag {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
