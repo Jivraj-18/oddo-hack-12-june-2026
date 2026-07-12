@@ -108,6 +108,31 @@
   color: var(--color-primary);
 }
 
+.challenge-card__message {
+  font-size: 13px;
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.challenge-card__file-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.challenge-card__file-label input {
+  font-size: 12px;
+}
+
+.challenge-card__joined-flag {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
 .challenge-card__join-btn,
 .reward-card__redeem-btn {
   margin-top: var(--space-2);

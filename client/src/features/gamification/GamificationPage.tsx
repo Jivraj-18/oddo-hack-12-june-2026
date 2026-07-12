@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiClient, getApiErrorMessage } from "../../lib/api-client";
 import { useAuth } from "../../lib/auth-context";
+import { uploadProofFile } from "../../lib/uploads";
 import "./gamification-page.css";
 
 interface Challenge {
@@ -60,17 +61,6 @@ export function GamificationPage() {
 
   useEffect(loadAll, []);
 
-  async function handleJoinChallenge(id: string) {
-    setMessage(null);
-    try {
-      await apiClient.post(`/challenges/${id}/join`, {});
-      setMessage("You have joined this challenge.");
-      loadAll();
-    } catch (err) {
-      setMessage(getApiErrorMessage(err));
-    }
-  }
-
   async function handleRedeem(id: string) {
     setMessage(null);
     try {
@@ -106,25 +96,7 @@ export function GamificationPage() {
         <div className="gamification-page__grid">
           {challenges.length === 0 && <p className="gamification-page__empty">No challenges yet — create one.</p>}
           {challenges.map((c) => (
-            <article key={c.id} className="challenge-card">
-              <div className="challenge-card__header">
-                <h3>{c.title}</h3>
-                <span className={`challenge-card__difficulty challenge-card__difficulty--${c.difficulty}`}>{c.difficulty}</span>
-              </div>
-              <p className="challenge-card__category">{c.category.name}</p>
-              <p className="challenge-card__description">{c.description}</p>
-              <div className="challenge-card__meta">
-                <span>{c.xp} XP</span>
-                <span>Deadline {new Date(c.deadline).toLocaleDateString()}</span>
-                <span>{c._count.participations} joined</span>
-              </div>
-              <span className={`challenge-card__status challenge-card__status--${c.status}`}>{c.status.replace("_", " ")}</span>
-              {user?.role === "employee" && c.status === "active" && (
-                <button type="button" className="challenge-card__join-btn" onClick={() => handleJoinChallenge(c.id)}>
-                  Join challenge
-                </button>
-              )}
-            </article>
+            <ChallengeCard key={c.id} challenge={c} canJoin={user?.role === "employee"} onJoined={loadAll} />
           ))}
         </div>
       )}
@@ -189,5 +161,76 @@ export function GamificationPage() {
         </table>
       )}
     </div>
+  );
+}
+
+function ChallengeCard({
+  challenge,
+  canJoin,
+  onJoined,
+}: {
+  challenge: Challenge;
+  canJoin: boolean;
+  onJoined: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [joining, setJoining] = useState(false);
+  const [joined, setJoined] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function handleJoin() {
+    if (challenge.evidenceRequired && !file) {
+      setMessage("Attach proof before joining this challenge.");
+      return;
+    }
+    setJoining(true);
+    setMessage(null);
+    try {
+      const proofFilePath = file ? await uploadProofFile(file) : undefined;
+      await apiClient.post(`/challenges/${challenge.id}/join`, { proofFilePath });
+      setJoined(true);
+      onJoined();
+    } catch (err) {
+      setMessage(getApiErrorMessage(err));
+    } finally {
+      setJoining(false);
+    }
+  }
+
+  return (
+    <article className="challenge-card">
+      <div className="challenge-card__header">
+        <h3>{challenge.title}</h3>
+        <span className={`challenge-card__difficulty challenge-card__difficulty--${challenge.difficulty}`}>{challenge.difficulty}</span>
+      </div>
+      <p className="challenge-card__category">{challenge.category.name}</p>
+      <p className="challenge-card__description">{challenge.description}</p>
+      <div className="challenge-card__meta">
+        <span>{challenge.xp} XP</span>
+        <span>Deadline {new Date(challenge.deadline).toLocaleDateString()}</span>
+        <span>{challenge._count.participations} joined</span>
+      </div>
+      <span className={`challenge-card__status challenge-card__status--${challenge.status}`}>{challenge.status.replace("_", " ")}</span>
+      {message && <p className="challenge-card__message">{message}</p>}
+      {canJoin && !joined && challenge.status === "active" && (
+        <>
+          {challenge.evidenceRequired && (
+            <label className="challenge-card__file-label" htmlFor={`challenge-proof-${challenge.id}`}>
+              Proof file
+              <input
+                id={`challenge-proof-${challenge.id}`}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
+          )}
+          <button type="button" className="challenge-card__join-btn" disabled={joining} onClick={handleJoin}>
+            {joining ? "Joining…" : "Join challenge"}
+          </button>
+        </>
+      )}
+      {joined && <p className="challenge-card__joined-flag">Joined</p>}
+    </article>
   );
 }
