@@ -1,8 +1,13 @@
-import { useEffect, useState } from "react";
-import { apiClient, getApiErrorMessage } from "../../lib/api-client";
+import { useEffect, useState, type FormEvent } from "react";
+import { apiClient, getApiErrorMessage, getApiFieldErrors } from "../../lib/api-client";
 import { useAuth } from "../../lib/auth-context";
 import { uploadProofFile } from "../../lib/uploads";
 import "./social-page.css";
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface CsrActivity {
   id: string;
@@ -44,6 +49,7 @@ export function SocialPage() {
   const [activities, setActivities] = useState<CsrActivity[]>([]);
   const [participations, setParticipations] = useState<Participation[]>([]);
   const [diversityMetrics, setDiversityMetrics] = useState<DiversityMetric[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
   const isManager = user?.role === "admin" || user?.role === "manager";
@@ -53,6 +59,10 @@ export function SocialPage() {
       .get<CsrActivity[]>("/csr-activities")
       .then((res) => setActivities(res.data))
       .catch(() => setError("Could not load CSR activities."));
+  }
+
+  function loadCategories() {
+    apiClient.get<Category[]>("/categories").then((res) => setCategories(res.data)).catch(() => {});
   }
 
   function loadParticipations() {
@@ -73,6 +83,7 @@ export function SocialPage() {
   useEffect(loadActivities, []);
   useEffect(loadParticipations, [isManager]);
   useEffect(loadDiversity, []);
+  useEffect(loadCategories, []);
 
   function handleJoined(activityId: string) {
     setJoinedIds((prev) => new Set(prev).add(activityId));
@@ -109,18 +120,21 @@ export function SocialPage() {
       {error && <p className="social-page__error">{error}</p>}
 
       {tab === "CSR Activities" && (
-        <div className="social-page__grid">
-          {activities.length === 0 && !error && <p className="social-page__empty">No CSR activities yet — create one.</p>}
-          {activities.map((activity) => (
-            <CsrActivityCard
-              key={activity.id}
-              activity={activity}
-              canJoin={user?.role === "employee"}
-              joined={joinedIds.has(activity.id)}
-              onJoined={() => handleJoined(activity.id)}
-            />
-          ))}
-        </div>
+        <>
+          {isManager && <CreateCsrActivityForm categories={categories} onCreated={loadActivities} />}
+          <div className="social-page__grid">
+            {activities.length === 0 && !error && <p className="social-page__empty">No CSR activities yet — create one.</p>}
+            {activities.map((activity) => (
+              <CsrActivityCard
+                key={activity.id}
+                activity={activity}
+                canJoin={user?.role === "employee"}
+                joined={joinedIds.has(activity.id)}
+                onJoined={() => handleJoined(activity.id)}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {tab === "Employee Participation" && isManager && (
@@ -281,5 +295,100 @@ function CsrActivityCard({
       )}
       {joined && <p className="csr-card__joined-flag">Joined</p>}
     </article>
+  );
+}
+
+function CreateCsrActivityForm({ categories, onCreated }: { categories: Category[]; onCreated: () => void }) {
+  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [description, setDescription] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [points, setPoints] = useState("");
+  const [evidenceRequired, setEvidenceRequired] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    setSubmitting(true);
+    setFormError(null);
+    setFieldErrors({});
+    try {
+      await apiClient.post("/csr-activities", { title, categoryId, description, eventDate, location, points, evidenceRequired });
+      setTitle("");
+      setCategoryId("");
+      setDescription("");
+      setEventDate("");
+      setLocation("");
+      setPoints("");
+      setEvidenceRequired(false);
+      setShowForm(false);
+      onCreated();
+    } catch (err) {
+      setFormError(getApiErrorMessage(err));
+      setFieldErrors(getApiFieldErrors(err));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="social-page__create">
+      <button type="button" className="social-page__add-btn" onClick={() => setShowForm((v) => !v)}>
+        {showForm ? "Cancel" : "Create CSR activity"}
+      </button>
+      {showForm && (
+        <form className="social-page__form" onSubmit={handleSubmit} noValidate>
+          {formError && <p className="social-page__form-error">{formError}</p>}
+          <label htmlFor="csr-title">
+            Title
+            <input id="csr-title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            {fieldErrors.title && <span className="social-page__field-error">{fieldErrors.title}</span>}
+          </label>
+          <label htmlFor="csr-category">
+            Category
+            <select id="csr-category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            {fieldErrors.categoryId && <span className="social-page__field-error">{fieldErrors.categoryId}</span>}
+          </label>
+          <label htmlFor="csr-description">
+            Description
+            <input id="csr-description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+            {fieldErrors.description && <span className="social-page__field-error">{fieldErrors.description}</span>}
+          </label>
+          <label htmlFor="csr-date">
+            Event date
+            <input id="csr-date" type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} required />
+            {fieldErrors.eventDate && <span className="social-page__field-error">{fieldErrors.eventDate}</span>}
+          </label>
+          <label htmlFor="csr-location">
+            Location
+            <input id="csr-location" value={location} onChange={(e) => setLocation(e.target.value)} required />
+            {fieldErrors.location && <span className="social-page__field-error">{fieldErrors.location}</span>}
+          </label>
+          <label htmlFor="csr-points">
+            Points
+            <input id="csr-points" type="number" min="0" value={points} onChange={(e) => setPoints(e.target.value)} required />
+            {fieldErrors.points && <span className="social-page__field-error">{fieldErrors.points}</span>}
+          </label>
+          <label className="social-page__checkbox-label" htmlFor="csr-evidence">
+            <input id="csr-evidence" type="checkbox" checked={evidenceRequired} onChange={(e) => setEvidenceRequired(e.target.checked)} />
+            Evidence required
+          </label>
+          <button type="submit" className="social-page__submit" disabled={submitting}>
+            {submitting ? "Saving…" : "Save activity"}
+          </button>
+        </form>
+      )}
+    </div>
   );
 }

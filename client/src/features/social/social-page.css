@@ -207,3 +207,75 @@
   border: 1px solid var(--color-danger);
   color: var(--color-danger);
 }
+
+.social-page__create {
+  margin-bottom: var(--space-5);
+}
+
+.social-page__add-btn {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.social-page__form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  align-items: end;
+}
+
+.social-page__form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.social-page__form input,
+.social-page__form select {
+  font-size: 14px;
+  font-weight: 400;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.social-page__checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: var(--space-2) !important;
+}
+
+.social-page__field-error {
+  color: var(--color-danger);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.social-page__form-error {
+  grid-column: 1 / -1;
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.social-page__submit {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  font-weight: 600;
+  height: fit-content;
+}

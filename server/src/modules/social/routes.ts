@@ -5,6 +5,7 @@ import {
   createCsrActivitySchema,
   joinCsrActivitySchema,
   createDiversityMetricSchema,
+  createCategorySchema,
 } from "./schema.js";
 import * as socialService from "./service.js";
 import { prisma } from "../../db/prisma.js";
@@ -68,4 +69,9 @@ socialRouter.post(
 
 socialRouter.get("/categories", async (_req, res) => {
   res.json(await prisma.category.findMany({ orderBy: { name: "asc" } }));
+});
+
+socialRouter.post("/categories", requireRole("admin"), validateBody(createCategorySchema), async (req, res) => {
+  const category = await prisma.category.create({ data: { ...req.body, status: "active" } });
+  res.status(201).json(category);
 });

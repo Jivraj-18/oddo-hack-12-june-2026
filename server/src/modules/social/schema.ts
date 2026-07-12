@@ -14,6 +14,11 @@ export const joinCsrActivitySchema = z.object({
   proofFilePath: z.string().optional(),
 });
 
+export const createCategorySchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  type: z.enum(["csr_activity", "challenge"]),
+});
+
 export const createDiversityMetricSchema = z.object({
   departmentId: z.string().uuid("Select a valid department."),
   period: z.string().regex(/^\d{4}-\d{2}$/, "Period must be in YYYY-MM format."),
