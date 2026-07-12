@@ -1,0 +1,118 @@
+.app-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.app-layout__sidebar {
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-5) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.app-layout__brand {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.app-layout__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.app-layout__nav-link {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.app-layout__nav-link:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.app-layout__nav-link.is-active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.app-layout__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-layout__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.app-layout__header-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.app-layout__user-name {
+  font-weight: 600;
+}
+
+.app-layout__user-role {
+  font-size: 12px;
+  text-transform: capitalize;
+  color: var(--color-text-muted);
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.app-layout__logout {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.app-layout__logout:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.app-layout__content {
+  padding: var(--space-6);
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .app-layout__sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .app-layout__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

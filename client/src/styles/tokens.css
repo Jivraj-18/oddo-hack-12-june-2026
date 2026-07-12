@@ -1,0 +1,44 @@
+:root {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Source Sans 3", system-ui, sans-serif;
+
+  --color-bg: #f6f4ef;
+  --color-surface: #ffffff;
+  --color-border: #ded9cd;
+  --color-text: #2b2a26;
+  --color-text-muted: #6b6a63;
+
+  --color-primary: #1f6f4a;
+  --color-primary-hover: #175a3b;
+  --color-secondary: #a8672f;
+
+  --color-success: #1f8a4c;
+  --color-warning: #b7791f;
+  --color-danger: #b3261e;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #14170f;
+    --color-surface: #1b1f16;
+    --color-border: #2d3226;
+    --color-text: #eae7de;
+    --color-text-muted: #a3a094;
+
+    --color-primary: #4fae7f;
+    --color-primary-hover: #6bc196;
+    --color-secondary: #d1935f;
+  }
+}

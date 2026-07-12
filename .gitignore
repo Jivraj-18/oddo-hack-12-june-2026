@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+/docs
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
+uploads/
+server/src/generated/
+client/dist/
+CLAUDE.md
+prompts.md
+claude-proposal.md

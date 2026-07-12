@@ -1,0 +1,521 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Core / auth
+// ---------------------------------------------------------------------------
+
+enum Role {
+  admin
+  manager
+  employee
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  role          Role     @default(employee)
+  departmentId  String?  @map("department_id")
+  xpBalance     Int      @default(0) @map("xp_balance")
+  pointsBalance Int      @default(0) @map("points_balance")
+  avatarUrl     String?  @map("avatar_url")
+  isActive      Boolean  @default(true) @map("is_active")
+  tourCompletedAt DateTime? @map("tour_completed_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  department              Department?             @relation(fields: [departmentId], references: [id])
+  headOfDepartments       Department[]            @relation("DepartmentHead")
+  csrActivitiesCreated    CsrActivity[]            @relation("CsrCreatedBy")
+  employeeParticipations  EmployeeParticipation[]  @relation("ParticipationUser")
+  reviewedParticipations  EmployeeParticipation[]  @relation("ParticipationReviewer")
+  policyAcknowledgements  PolicyAcknowledgement[]
+  complianceIssuesOwned   ComplianceIssue[]
+  challengeParticipations ChallengeParticipation[]
+  userBadges              UserBadge[]
+  rewardRedemptions       RewardRedemption[]
+  notifications           Notification[]
+
+  @@index([departmentId])
+  @@map("users")
+}
+
+model Department {
+  id                 String   @id @default(uuid())
+  name               String
+  code               String   @unique
+  headUserId         String?  @map("head_user_id")
+  parentDepartmentId String?  @map("parent_department_id")
+  status             String   @default("active")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  head             User?        @relation("DepartmentHead", fields: [headUserId], references: [id])
+  parent           Department?  @relation("DepartmentHierarchy", fields: [parentDepartmentId], references: [id])
+  children         Department[] @relation("DepartmentHierarchy")
+  users            User[]
+  environmentalGoals EnvironmentalGoal[]
+  erpOperations      ErpOperation[]
+  carbonTransactions CarbonTransaction[]
+  diversityMetrics   DiversityMetric[]
+  audits             Audit[]
+  complianceIssues   ComplianceIssue[]
+  departmentScores   DepartmentScore[]
+
+  @@index([status])
+  @@map("departments")
+}
+
+enum CategoryType {
+  csr_activity
+  challenge
+}
+
+model Category {
+  id     String       @id @default(uuid())
+  name   String
+  type   CategoryType
+  status String       @default("active")
+
+  csrActivities CsrActivity[]
+  challenges    Challenge[]
+
+  @@map("categories")
+}
+
+// ---------------------------------------------------------------------------
+// Environmental
+// ---------------------------------------------------------------------------
+
+enum ActivityType {
+  purchase
+  manufacturing
+  expense
+  fleet
+}
+
+model EmissionFactor {
+  id           String       @id @default(uuid())
+  name         String
+  activityType ActivityType @map("activity_type")
+  unit         String
+  co2ePerUnit  Decimal      @map("co2e_per_unit") @db.Decimal(12, 4)
+  effectiveFrom DateTime    @map("effective_from")
+  status       String       @default("active")
+
+  productProfiles    ProductEsgProfile[]
+  erpOperations      ErpOperation[]
+  carbonTransactions CarbonTransaction[]
+
+  @@index([status])
+  @@map("emission_factors")
+}
+
+model ProductEsgProfile {
+  id               String  @id @default(uuid())
+  productName      String  @map("product_name")
+  sku              String  @unique
+  emissionFactorId String? @map("emission_factor_id")
+  recyclable       Boolean @default(false)
+  esgRating        String?
+  notes            String?
+
+  emissionFactor EmissionFactor? @relation(fields: [emissionFactorId], references: [id])
+
+  @@map("product_esg_profiles")
+}
+
+enum GoalStatus {
+  active
+  on_track
+  at_risk
+  completed
+}
+
+model EnvironmentalGoal {
+  id           String     @id @default(uuid())
+  name         String
+  departmentId String     @map("department_id")
+  targetCo2    Decimal    @map("target_co2") @db.Decimal(12, 2)
+  currentCo2   Decimal    @default(0) @map("current_co2") @db.Decimal(12, 2)
+  deadline     DateTime
+  status       GoalStatus @default(active)
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@index([departmentId])
+  @@index([status])
+  @@map("environmental_goals")
+}
+
+model ErpOperation {
+  id            String       @id @default(uuid())
+  type          ActivityType
+  referenceNo   String       @map("reference_no")
+  departmentId  String       @map("department_id")
+  emissionFactorId String?   @map("emission_factor_id")
+  quantity      Decimal      @db.Decimal(12, 2)
+  unit          String
+  occurredAt    DateTime     @map("occurred_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  department      Department        @relation(fields: [departmentId], references: [id])
+  emissionFactor  EmissionFactor?   @relation(fields: [emissionFactorId], references: [id])
+  carbonTransaction CarbonTransaction?
+
+  @@index([departmentId])
+  @@index([occurredAt])
+  @@map("erp_operations")
+}
+
+enum TransactionSource {
+  auto
+  manual
+}
+
+model CarbonTransaction {
+  id               String            @id @default(uuid())
+  erpOperationId   String?           @unique @map("erp_operation_id")
+  emissionFactorId String            @map("emission_factor_id")
+  departmentId     String            @map("department_id")
+  quantity         Decimal           @db.Decimal(12, 2)
+  co2e             Decimal           @db.Decimal(12, 2)
+  source           TransactionSource @default(manual)
+  createdAt        DateTime          @default(now()) @map("created_at")
+
+  erpOperation   ErpOperation?  @relation(fields: [erpOperationId], references: [id])
+  emissionFactor EmissionFactor @relation(fields: [emissionFactorId], references: [id])
+  department     Department     @relation(fields: [departmentId], references: [id])
+
+  @@index([departmentId])
+  @@index([createdAt])
+  @@map("carbon_transactions")
+}
+
+// ---------------------------------------------------------------------------
+// Social
+// ---------------------------------------------------------------------------
+
+enum OpenClosedStatus {
+  open
+  closed
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
+}
+
+model CsrActivity {
+  id               String           @id @default(uuid())
+  title            String
+  categoryId       String           @map("category_id")
+  description      String
+  eventDate        DateTime         @map("event_date")
+  location         String
+  evidenceRequired Boolean          @default(false) @map("evidence_required")
+  points           Int              @default(0)
+  status           OpenClosedStatus @default(open)
+  createdBy        String           @map("created_by")
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  category      Category                @relation(fields: [categoryId], references: [id])
+  creator       User                    @relation("CsrCreatedBy", fields: [createdBy], references: [id])
+  participations EmployeeParticipation[]
+
+  @@index([status])
+  @@map("csr_activities")
+}
+
+model EmployeeParticipation {
+  id               String         @id @default(uuid())
+  userId           String         @map("user_id")
+  csrActivityId    String         @map("csr_activity_id")
+  proofFilePath    String?        @map("proof_file_path")
+  approvalStatus   ApprovalStatus @default(pending) @map("approval_status")
+  pointsEarned     Int            @default(0) @map("points_earned")
+  completionDate   DateTime?      @map("completion_date")
+  reviewedBy       String?        @map("reviewed_by")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  user        User        @relation("ParticipationUser", fields: [userId], references: [id])
+  csrActivity CsrActivity @relation(fields: [csrActivityId], references: [id])
+  reviewer    User?       @relation("ParticipationReviewer", fields: [reviewedBy], references: [id])
+
+  @@unique([userId, csrActivityId])
+  @@index([approvalStatus])
+  @@map("employee_participations")
+}
+
+model DiversityMetric {
+  id                    String   @id @default(uuid())
+  departmentId          String   @map("department_id")
+  period                String
+  genderRatio           Json     @map("gender_ratio")
+  trainingCompletionPct Decimal  @map("training_completion_pct") @db.Decimal(5, 2)
+
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([departmentId, period])
+  @@map("diversity_metrics")
+}
+
+// ---------------------------------------------------------------------------
+// Governance
+// ---------------------------------------------------------------------------
+
+model EsgPolicy {
+  id            String   @id @default(uuid())
+  title         String
+  body          String?
+  filePath      String?  @map("file_path")
+  version       String
+  effectiveDate DateTime @map("effective_date")
+  status        String   @default("active")
+
+  acknowledgements PolicyAcknowledgement[]
+
+  @@map("esg_policies")
+}
+
+model PolicyAcknowledgement {
+  id             String   @id @default(uuid())
+  policyId       String   @map("policy_id")
+  userId         String   @map("user_id")
+  acknowledgedAt DateTime @default(now()) @map("acknowledged_at")
+
+  policy EsgPolicy @relation(fields: [policyId], references: [id])
+  user   User      @relation(fields: [userId], references: [id])
+
+  @@unique([policyId, userId])
+  @@map("policy_acknowledgements")
+}
+
+enum AuditStatus {
+  scheduled
+  in_progress
+  under_review
+  completed
+}
+
+model Audit {
+  id              String      @id @default(uuid())
+  title           String
+  departmentId    String      @map("department_id")
+  auditorName     String      @map("auditor_name")
+  auditDate       DateTime    @map("audit_date")
+  findingsSummary String?     @map("findings_summary")
+  status          AuditStatus @default(scheduled)
+
+  department Department        @relation(fields: [departmentId], references: [id])
+  issues     ComplianceIssue[]
+
+  @@index([status])
+  @@map("audits")
+}
+
+enum Severity {
+  low
+  medium
+  high
+}
+
+enum IssueStatus {
+  open
+  in_progress
+  resolved
+}
+
+model ComplianceIssue {
+  id           String      @id @default(uuid())
+  auditId      String      @map("audit_id")
+  description  String
+  severity     Severity
+  departmentId String      @map("department_id")
+  ownerUserId  String      @map("owner_user_id")
+  dueDate      DateTime    @map("due_date")
+  status       IssueStatus @default(open)
+  isOverdue    Boolean     @default(false) @map("is_overdue")
+  resolvedAt   DateTime?   @map("resolved_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  audit      Audit      @relation(fields: [auditId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+  owner      User       @relation(fields: [ownerUserId], references: [id])
+
+  @@index([status])
+  @@index([dueDate])
+  @@map("compliance_issues")
+}
+
+// ---------------------------------------------------------------------------
+// Gamification
+// ---------------------------------------------------------------------------
+
+enum Difficulty {
+  easy
+  medium
+  hard
+}
+
+enum ChallengeStatus {
+  draft
+  active
+  under_review
+  completed
+  archived
+}
+
+model Challenge {
+  id               String          @id @default(uuid())
+  title            String
+  categoryId       String          @map("category_id")
+  description      String
+  xp               Int
+  difficulty       Difficulty
+  evidenceRequired Boolean         @default(false) @map("evidence_required")
+  deadline         DateTime
+  status           ChallengeStatus @default(draft)
+  createdAt        DateTime        @default(now()) @map("created_at")
+
+  category       Category                 @relation(fields: [categoryId], references: [id])
+  participations ChallengeParticipation[]
+
+  @@index([status])
+  @@map("challenges")
+}
+
+model ChallengeParticipation {
+  id             String         @id @default(uuid())
+  challengeId    String         @map("challenge_id")
+  userId         String         @map("user_id")
+  progressPct    Decimal        @default(0) @map("progress_pct") @db.Decimal(5, 2)
+  proofFilePath  String?        @map("proof_file_path")
+  approvalStatus ApprovalStatus @default(pending) @map("approval_status")
+  xpAwarded      Int            @default(0) @map("xp_awarded")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([challengeId, userId])
+  @@index([approvalStatus])
+  @@map("challenge_participations")
+}
+
+model Badge {
+  id         String @id @default(uuid())
+  name       String
+  description String
+  icon       String
+  unlockRule Json   @map("unlock_rule")
+  status     String @default("active")
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  badgeId   String   @map("badge_id")
+  awardedAt DateTime @default(now()) @map("awarded_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Reward {
+  id             String @id @default(uuid())
+  name           String
+  description    String
+  pointsRequired Int    @map("points_required")
+  stock          Int
+  status         String @default("active")
+
+  redemptions RewardRedemption[]
+
+  @@map("rewards")
+}
+
+model RewardRedemption {
+  id          String   @id @default(uuid())
+  rewardId    String   @map("reward_id")
+  userId      String   @map("user_id")
+  pointsSpent Int      @map("points_spent")
+  redeemedAt  DateTime @default(now()) @map("redeemed_at")
+
+  reward Reward @relation(fields: [rewardId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("reward_redemptions")
+}
+
+// ---------------------------------------------------------------------------
+// Scoring & notifications
+// ---------------------------------------------------------------------------
+
+model DepartmentScore {
+  id                String   @id @default(uuid())
+  departmentId      String   @map("department_id")
+  period            String
+  environmentalScore Decimal @map("environmental_score") @db.Decimal(5, 2)
+  socialScore       Decimal  @map("social_score") @db.Decimal(5, 2)
+  governanceScore   Decimal  @map("governance_score") @db.Decimal(5, 2)
+  totalScore        Decimal  @map("total_score") @db.Decimal(5, 2)
+  computedAt        DateTime @default(now()) @map("computed_at")
+
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([departmentId, period])
+  @@index([departmentId, period])
+  @@map("department_scores")
+}
+
+model EsgConfig {
+  id                    String  @id @default(uuid())
+  autoEmissionCalc      Boolean @default(true) @map("auto_emission_calc")
+  evidenceRequiredGlobal Boolean @default(true) @map("evidence_required_global")
+  badgeAutoAward        Boolean @default(true) @map("badge_auto_award")
+  emailAlerts           Boolean @default(false) @map("email_alerts")
+  weightEnv             Decimal @default(0.4) @map("weight_env") @db.Decimal(3, 2)
+  weightSocial          Decimal @default(0.3) @map("weight_social") @db.Decimal(3, 2)
+  weightGov             Decimal @default(0.3) @map("weight_gov") @db.Decimal(3, 2)
+
+  @@map("esg_config")
+}
+
+enum NotificationType {
+  compliance_issue
+  approval_decision
+  policy_reminder
+  badge_unlock
+  issue_overdue
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  body      String
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
