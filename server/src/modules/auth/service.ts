@@ -5,13 +5,27 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from "./tokens.
 import type { z } from "zod";
 import type { registerSchema, loginSchema } from "./schema.js";
 
-function toAuthResponse(user: { id: string; name: string; email: string; role: any; departmentId: string | null }) {
+function toAuthResponse(user: {
+  id: string;
+  name: string;
+  email: string;
+  role: any;
+  departmentId: string | null;
+  tourCompletedAt: Date | null;
+}) {
   const accessToken = signAccessToken({ sub: user.id, role: user.role, departmentId: user.departmentId });
   const refreshToken = signRefreshToken(user.id);
   return {
     accessToken,
     refreshToken,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, departmentId: user.departmentId },
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      departmentId: user.departmentId,
+      tourCompletedAt: user.tourCompletedAt,
+    },
   };
 }
 
