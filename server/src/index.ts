@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { createApp } from "./app.js";
 import { startOverdueComplianceJob } from "./jobs/overdue-compliance.js";
+import { startScoringJob } from "./jobs/scoring.js";
 
 const app = createApp();
 const httpServer = createServer(app);
@@ -16,6 +17,7 @@ io.on("connection", (socket) => {
 });
 
 startOverdueComplianceJob(io);
+startScoringJob();
 
 const port = Number(process.env.PORT ?? 4000);
 httpServer.listen(port, () => {

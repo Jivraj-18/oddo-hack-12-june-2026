@@ -4,6 +4,9 @@ import cors from "cors";
 import { authRouter } from "./modules/auth/routes.js";
 import { departmentsRouter } from "./modules/departments/routes.js";
 import { environmentalRouter } from "./modules/environmental/routes.js";
+import { socialRouter } from "./modules/social/routes.js";
+import { gamificationRouter } from "./modules/gamification/routes.js";
+import { governanceRouter } from "./modules/governance/routes.js";
 import { dashboardRouter } from "./modules/dashboard/routes.js";
 import { notificationsRouter } from "./modules/notifications/routes.js";
 import { settingsRouter } from "./modules/settings/routes.js";
@@ -21,6 +24,9 @@ export function createApp() {
   app.use("/api/v1/departments", departmentsRouter);
   app.use("/api/v1/dashboard", dashboardRouter);
   app.use("/api/v1", environmentalRouter);
+  app.use("/api/v1", socialRouter);
+  app.use("/api/v1", gamificationRouter);
+  app.use("/api/v1", governanceRouter);
   app.use("/api/v1/notifications", notificationsRouter);
   app.use("/api/v1/settings", settingsRouter);
 

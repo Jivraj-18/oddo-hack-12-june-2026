@@ -1,10 +1,16 @@
 import { Router } from "express";
-import { requireAuth } from "../../middleware/auth.js";
+import { requireAuth, requireRole } from "../../middleware/auth.js";
 import { prisma } from "../../db/prisma.js";
+import { recomputeDepartmentScores } from "../../jobs/scoring.js";
 
 export const dashboardRouter = Router();
 
 dashboardRouter.use(requireAuth);
+
+dashboardRouter.post("/recompute-scores", requireRole("admin"), async (_req, res) => {
+  const count = await recomputeDepartmentScores();
+  res.json({ departmentsUpdated: count });
+});
 
 dashboardRouter.get("/summary", async (_req, res) => {
   const latestPeriod = await prisma.departmentScore.findFirst({ orderBy: { period: "desc" }, select: { period: true } });
