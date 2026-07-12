@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../lib/auth-context";
+import { NotificationBell } from "./NotificationBell";
+import { TourProvider, useTour } from "../../tour/TourProvider";
 import "./app-layout.css";
 
 const NAV_ITEMS = [
@@ -13,7 +15,16 @@ const NAV_ITEMS = [
 ];
 
 export function AppLayout() {
+  return (
+    <TourProvider>
+      <AppLayoutContent />
+    </TourProvider>
+  );
+}
+
+function AppLayoutContent() {
   const { user, logout } = useAuth();
+  const { start } = useTour();
 
   return (
     <div className="app-layout" id="app-layout">
@@ -25,17 +36,22 @@ export function AppLayout() {
               key={item.to}
               to={item.to}
               end={item.end}
+              data-tour={item.to === "/gamification" ? "nav-gamification" : item.to === "/reports" ? "nav-reports" : undefined}
               className={({ isActive }) => "app-layout__nav-link" + (isActive ? " is-active" : "")}
             >
               {item.label}
             </NavLink>
           ))}
         </nav>
+        <button type="button" className="app-layout__tour-btn" onClick={start}>
+          Take a tour
+        </button>
       </aside>
       <div className="app-layout__main">
         <header className="app-layout__header" id="app-header">
           <div className="app-layout__header-spacer" />
           <div className="app-layout__header-user">
+            <NotificationBell />
             <span className="app-layout__user-name">{user?.name}</span>
             <span className="app-layout__user-role">{user?.role}</span>
             <button type="button" className="app-layout__logout" onClick={logout}>

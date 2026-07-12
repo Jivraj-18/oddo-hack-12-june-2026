@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+import type { Notification, Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 
 type Tx = PrismaClient | Prisma.TransactionClient;
@@ -26,9 +26,9 @@ async function computeMetric(tx: Tx, userId: string, metric: UnlockRule["metric"
   return tx.employeeParticipation.count({ where: { userId, approvalStatus: "approved" } });
 }
 
-export async function evaluateBadgesForUser(userId: string, tx: Tx = prisma): Promise<void> {
+export async function evaluateBadgesForUser(userId: string, tx: Tx = prisma): Promise<Notification[]> {
   const config = await tx.esgConfig.findFirst();
-  if (config && !config.badgeAutoAward) return;
+  if (config && !config.badgeAutoAward) return [];
 
   const [badges, ownedBadgeIds] = await Promise.all([
     tx.badge.findMany({ where: { status: "active" } }),
@@ -36,6 +36,7 @@ export async function evaluateBadgesForUser(userId: string, tx: Tx = prisma): Pr
   ]);
 
   const metricCache = new Map<string, number>();
+  const notifications: Notification[] = [];
 
   for (const badge of badges) {
     if (ownedBadgeIds.has(badge.id)) continue;
@@ -50,7 +51,7 @@ export async function evaluateBadgesForUser(userId: string, tx: Tx = prisma): Pr
     if (compare(actual, rule.op, rule.value)) {
       try {
         await tx.userBadge.create({ data: { userId, badgeId: badge.id } });
-        await tx.notification.create({
+        const notification = await tx.notification.create({
           data: {
             userId,
             type: "badge_unlock",
@@ -58,9 +59,12 @@ export async function evaluateBadgesForUser(userId: string, tx: Tx = prisma): Pr
             body: badge.description,
           },
         });
+        notifications.push(notification);
       } catch {
         // unique constraint on (userId, badgeId) guards against a double award race
       }
     }
   }
+
+  return notifications;
 }

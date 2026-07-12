@@ -1,6 +1,8 @@
 import { prisma } from "../../db/prisma.js";
 import { AppError } from "../../middleware/error-handler.js";
 import { evaluateBadgesForUser } from "../gamification/badge-engine.js";
+import { emitToUser } from "../../realtime.js";
+import type { Notification } from "@prisma/client";
 import type { z } from "zod";
 import type { createCsrActivitySchema, createDiversityMetricSchema } from "./schema.js";
 
@@ -65,12 +67,13 @@ export async function reviewParticipation(participationId: string, decision: "ap
       },
     });
 
+    let badgeNotifications: Notification[] = [];
     if (decision === "approved") {
       await tx.user.update({ where: { id: participation.userId }, data: { pointsBalance: { increment: pointsEarned } } });
-      await evaluateBadgesForUser(participation.userId, tx);
+      badgeNotifications = await evaluateBadgesForUser(participation.userId, tx);
     }
 
-    await tx.notification.create({
+    const notification = await tx.notification.create({
       data: {
         userId: participation.userId,
         type: "approval_decision",
@@ -79,10 +82,14 @@ export async function reviewParticipation(participationId: string, decision: "ap
       },
     });
 
-    return record;
+    return { record, notification, badgeNotifications };
   });
 
-  return updated;
+  emitToUser(participation.userId, "notification", updated.notification);
+  for (const badgeNotification of updated.badgeNotifications) {
+    emitToUser(participation.userId, "notification", badgeNotification);
+  }
+  return updated.record;
 }
 
 export async function createDiversityMetric(input: z.infer<typeof createDiversityMetricSchema>) {
